@@ -48,7 +48,7 @@ public class WordCount extends Configured implements Tool {
 
 			// specify output types
 			job.setOutputKeyClass(Text.class);
-			job.setOutputValueClass(DoubleWritable.class);
+			job.setOutputValueClass(Wrapper.class);
 
 			// specify input and output directories
 			FileInputFormat.addInputPath(job, new Path(args[0]));

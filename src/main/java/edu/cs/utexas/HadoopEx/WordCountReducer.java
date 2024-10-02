@@ -15,11 +15,9 @@ public class WordCountReducer extends  Reducer<Text, Wrapper, Text, DoubleWritab
            throws IOException, InterruptedException {
 	   
         double[] data = new double[5];
-        int counter = 0;
         
         for (Wrapper val : values) {
             // System.out.println("Taxi ID: " + text.toString() + " Time: " + val.gettime().get() + " Total: " + val.gettotal().get());
-            counter += 1;
             double distance = val.getDistance().get();
             double fare_amount = val.getFareAmount().get();
             // float multiplied = val.getMultiplied().get();
@@ -28,6 +26,10 @@ public class WordCountReducer extends  Reducer<Text, Wrapper, Text, DoubleWritab
             data[2] += fare_amount;
             data[3] += distance * fare_amount;
             data[4] += Math.pow(distance, 2);
+        }
+
+        for(double a : data){
+            System.out.println("DATA" + a);
         }
 
         double m = 0;
@@ -41,8 +43,10 @@ public class WordCountReducer extends  Reducer<Text, Wrapper, Text, DoubleWritab
         m = ((n * sumxy) - (sumx * sumy)) / ((n * sumx2) - Math.pow(sumx, 2));
         b =  ((sumx2 * sumy) - (sumx * sumxy)) / ((n * sumx2) - Math.pow(sumx, 2));
 
+        System.out.println(m);
+        System.out.println(b);
 
         context.write(new Text("m"), new DoubleWritable(m));
-        context.write(new Text("m"), new DoubleWritable(b));
+        context.write(new Text("b"), new DoubleWritable(b));
    }
 }
