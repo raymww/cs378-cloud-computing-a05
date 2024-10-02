@@ -70,7 +70,7 @@ public class WordCount extends Configured implements Tool {
 			writer.close();
 
 			double lr = 0.001;
-			double m = 1;
+			double m = 0;
 			double b = 0;
 			for(int i = 0; i < 100; i++){
 				System.out.println("M at iteration " + i + ": " + m);
@@ -109,8 +109,8 @@ public class WordCount extends Configured implements Tool {
 				double mpart = Double.parseDouble(reader.readLine().split("\\s+")[1]);
 				double bpart = Double.parseDouble(reader.readLine().split("\\s+")[1]);
 
-				m += mpart * lr;
-				b += bpart * lr;
+				m -= mpart * lr;
+				b -= bpart * lr;
 			}
 
 			System.out.println("Final M: " + m);

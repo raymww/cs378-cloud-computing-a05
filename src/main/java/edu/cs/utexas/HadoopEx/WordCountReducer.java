@@ -69,7 +69,7 @@ public class WordCountReducer extends  Reducer<Text, Wrapper, Text, DoubleWritab
             // float multiplied = val.getMultiplied().get();
             data[0] += (-1 * distance) * (fare_amount - ((m * distance) + b));
             data[1] += -1 * (fare_amount - (m * distance  + b));
-            data[2] += Math.pow((fare_amount - (m * distance  + b)), 2);
+            data[2] += Math.pow((fare_amount - ((m * distance) + b)), 2);
         }
 
         System.out.println(data[0] + " " + data[1] + " " + data[2]);
