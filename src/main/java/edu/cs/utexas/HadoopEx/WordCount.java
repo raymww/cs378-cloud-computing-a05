@@ -39,9 +39,6 @@ public class WordCount extends Configured implements Tool {
 	 */
 	public int run(String args[]) {
 		try {
-			Configuration conf = new Configuration();
-
-
 			BufferedReader reader = new BufferedReader(new FileReader(args[0]));
             BufferedWriter writer = new BufferedWriter(new FileWriter("cleaned_dataset.csv", false));
             String line;
@@ -62,7 +59,7 @@ public class WordCount extends Configured implements Tool {
 						// throw new Exception(distance + " " + fare_amount + " " + tolls_amount + " " + time);
 						throw new Exception();
 					} 
-					writer.write(line);
+					writer.write(line + "\n");
 				} catch (Exception e) {
 					continue;
 				}
@@ -71,26 +68,52 @@ public class WordCount extends Configured implements Tool {
 			reader.close();
 			writer.close();
 
+			double m = 1;
+			double b = 0;
+			double lr = 0.001;
 
-			Job job = new Job(conf, "WordCount");
-			job.setJarByClass(WordCount.class);
 
-			// specify a Mapper
-			job.setMapperClass(WordCountMapper.class);
+			for (int i = 0; i < 100; i ++){
+				System.out.println("M at iteration " + i + ": " + m);
+				System.out.println("B at iteration " + i + ": " + b);
+				Configuration conf = new Configuration();
+				conf.set("m", Double.toString(m));
+				conf.set("b", Double.toString(b));
+				conf.setInt("iteration", i);
 
-			// specify a Reducer
-			job.setReducerClass(WordCountReducer.class);
+				Job job = new Job(conf, "WordCount");
+				job.setJarByClass(WordCount.class);
 
-			// specify output types
-			job.setOutputKeyClass(Text.class);
-			job.setOutputValueClass(Wrapper.class);
+				// specify a Mapper
+				job.setMapperClass(WordCountMapper.class);
 
-			// specify input and output directories
-			FileInputFormat.addInputPath(job, new Path("cleaned_dataset.csv"));
-			job.setInputFormatClass(TextInputFormat.class);
+				// specify a Reducer
+				job.setReducerClass(WordCountReducer.class);
 
-			FileOutputFormat.setOutputPath(job, new Path(args[1]));
-			job.setOutputFormatClass(TextOutputFormat.class);
+				// specify output types
+				job.setOutputKeyClass(Text.class);
+				job.setOutputValueClass(Wrapper.class);
+
+				// specify input and output directories
+				FileInputFormat.addInputPath(job, new Path("cleaned_dataset.csv"));
+				job.setInputFormatClass(TextInputFormat.class);
+
+				FileOutputFormat.setOutputPath(job, new Path(args[1] + i));
+				job.setOutputFormatClass(TextOutputFormat.class);
+				job.waitForCompletion(true);
+				
+				reader = new BufferedReader(new FileReader(args[1] + "/" + i));
+				Double mpartial = Double.parseDouble(reader.readLine().split(" ")[1]);
+				Double bpartial = Double.parseDouble(reader.readLine().split(" ")[1]);
+				
+				m += mpartial * lr;
+				b += bpartial * lr;
+
+			}
+
+			System.out.println("Final M: " + m);
+			System.out.println("Final B: " + b);
+			
 
 			// if (!job.waitForCompletion(true)) {
 			// 	return 1;
@@ -118,8 +141,7 @@ public class WordCount extends Configured implements Tool {
 
 			// FileOutputFormat.setOutputPath(job2, new Path(args[2]));
 			// job2.setOutputFormatClass(TextOutputFormat.class);
-
-			return (job.waitForCompletion(true) ? 0 : 1);
+			return 0;
 
 		} catch (InterruptedException | ClassNotFoundException | IOException e) {
 			System.err.println("Error during mapreduce job.");

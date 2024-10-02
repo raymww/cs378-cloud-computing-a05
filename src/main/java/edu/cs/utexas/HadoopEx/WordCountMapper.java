@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.taskdetails_jsp;
 import org.apache.hadoop.mapreduce.Mapper;
 
