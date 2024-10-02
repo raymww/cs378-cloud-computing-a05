@@ -1,5 +1,9 @@
 package edu.cs.utexas.HadoopEx;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -35,27 +39,82 @@ public class WordCount extends Configured implements Tool {
 	 */
 	public int run(String args[]) {
 		try {
-			Configuration conf = new Configuration();
 
-			Job job = new Job(conf, "WordCount");
-			job.setJarByClass(WordCount.class);
+			BufferedReader reader = new BufferedReader(new FileReader(args[0]));
+            BufferedWriter writer = new BufferedWriter(new FileWriter("cleaned_dataset.csv", false));
+            String line;
 
-			// specify a Mapper
-			job.setMapperClass(WordCountMapper.class);
+            // Process each line from the input CSV file
+            while ((line = reader.readLine()) != null) {
+                String[] fields = line.split(","); // Split by comma
 
-			// specify a Reducer
-			job.setReducerClass(WordCountReducer.class);
 
-			// specify output types
-			job.setOutputKeyClass(Text.class);
-			job.setOutputValueClass(Wrapper.class);
+				try {
+					String driverID = fields[1].trim();
+					double distance = Double.parseDouble(fields[5]);
+					double fare_amount = Double.parseDouble(fields[11]);
+					double tolls_amount = Double.parseDouble(fields[15]);
+					double time = Double.parseDouble(fields[4]);
 
-			// specify input and output directories
-			FileInputFormat.addInputPath(job, new Path(args[0]));
-			job.setInputFormatClass(TextInputFormat.class);
+					if (tolls_amount < 3 || fare_amount < 3 || fare_amount > 200 || distance < 1 || distance > 50 || time < 120 || time > 3600){
+						// throw new Exception(distance + " " + fare_amount + " " + tolls_amount + " " + time);
+						throw new Exception();
+					} 
+					writer.write(line + "\n");
+				} catch (Exception e) {
+					continue;
+				}
+            }
 
-			FileOutputFormat.setOutputPath(job, new Path(args[1]));
-			job.setOutputFormatClass(TextOutputFormat.class);
+			reader.close();
+			writer.close();
+
+			double lr = 0.001;
+			double m = 1;
+			double b = 0;
+			for(int i = 0; i < 100; i++){
+				System.out.println("M at iteration " + i + ": " + m);
+				System.out.println("B at iteration " + i + ": " + b);
+
+				writer = new BufferedWriter(new FileWriter("params", false));
+				writer.write(Double.toString(m) + "\n");
+				writer.write(Double.toString(b) + "\n");
+				writer.write(Integer.toString(i) + "\n");
+				writer.close();
+
+				Configuration conf = new Configuration();
+				Job job = new Job(conf, "WordCount");
+				job.setJarByClass(WordCount.class);
+
+				// specify a Mapper
+				job.setMapperClass(WordCountMapper.class);
+
+				// specify a Reducer
+				job.setReducerClass(WordCountReducer.class);
+
+				// specify output types
+				job.setOutputKeyClass(Text.class);
+				job.setOutputValueClass(Wrapper.class);
+
+				// specify input and output directories
+				FileInputFormat.addInputPath(job, new Path("cleaned_dataset.csv"));
+				job.setInputFormatClass(TextInputFormat.class);
+
+				FileOutputFormat.setOutputPath(job, new Path(args[1] + i));
+				job.setOutputFormatClass(TextOutputFormat.class);
+				job.waitForCompletion(true);
+
+				reader = new BufferedReader(new FileReader(args[1] + i + "/part-r-00000"));
+				
+				double mpart = Double.parseDouble(reader.readLine().split("\\s+")[1]);
+				double bpart = Double.parseDouble(reader.readLine().split("\\s+")[1]);
+
+				m += mpart * lr;
+				b += bpart * lr;
+			}
+
+			System.out.println("Final M: " + m);
+			System.out.println("Final B: " + b);
 
 			// if (!job.waitForCompletion(true)) {
 			// 	return 1;
@@ -83,8 +142,7 @@ public class WordCount extends Configured implements Tool {
 
 			// FileOutputFormat.setOutputPath(job2, new Path(args[2]));
 			// job2.setOutputFormatClass(TextOutputFormat.class);
-
-			return (job.waitForCompletion(true) ? 0 : 1);
+			return 0;
 
 		} catch (InterruptedException | ClassNotFoundException | IOException e) {
 			System.err.println("Error during mapreduce job.");
