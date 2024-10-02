@@ -31,10 +31,11 @@ public class WordCountMapper extends Mapper<Object, Text, Text, Wrapper> {
 				double distance = Double.parseDouble(fields[5]);
 				double fare_amount = Double.parseDouble(fields[11]);
 				Wrapper wrapper = new Wrapper(distance, fare_amount);
+				System.out.println("Mapper: " + wrapper.getDistance() + " " +  wrapper.getFareAmount());
 				context.write(new Text("taxi"), wrapper);
 
 		} catch (Exception e) {	
-			// System.out.println("Error: " + e.getMessage());
+			System.out.println("Error: " + e.getMessage());
 			return;
 		}
 	}

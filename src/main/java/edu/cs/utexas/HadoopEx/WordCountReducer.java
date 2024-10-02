@@ -12,20 +12,21 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 public class WordCountReducer extends  Reducer<Text, DoubleWritable, Text, DoubleWritable> {
 
-    private double m;
-	private double b;
+    private double m = 1;
+	private double b = 1;
 	private int iteration;
 
-    public void configure(JobConf job) {
-        m = Double.parseDouble(job.get("m", "")); 
-        // nb: last arg is the default value if option is not set
-        b = Double.parseDouble(job.get("b", ""));
-		iteration = job.getInt("iteration", iteration);
-    }
+    // public void configure(JobConf job) {
+    //     m = Double.parseDouble(job.get("m", "")); 
+    //     // nb: last arg is the default value if option is not set
+    //     b = Double.parseDouble(job.get("b", ""));
+	// 	iteration = job.getInt("iteration", iteration);
+    // }
 
     public void reduce(Text text, Iterable<Wrapper> values, Context context)
            throws IOException, InterruptedException {
 	   
+        System.out.println("REDUCING");
         double[] data = new double[3];
         int count = 0;
         
@@ -43,9 +44,11 @@ public class WordCountReducer extends  Reducer<Text, DoubleWritable, Text, Doubl
         double mpart = (2 / count) * data[0];
         double bpart = (2 / count) * data[1];
 
+        System.out.println("mpart: " + mpart);
+        System.out.println("bpart: " + bpart);
         System.out.println("Cost at iteration " + iteration + ": " + data[2]);
 
-        context.write(new Text("m"), new DoubleWritable(mpart));
-        context.write(new Text("b"), new DoubleWritable(bpart));
+        // context.write(new Text("m"), new DoubleWritable(mpart));
+        // context.write(new Text("b"), new DoubleWritable(bpart));
     }
 }

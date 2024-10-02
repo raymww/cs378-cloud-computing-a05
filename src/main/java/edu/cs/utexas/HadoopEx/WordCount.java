@@ -73,7 +73,7 @@ public class WordCount extends Configured implements Tool {
 			double lr = 0.001;
 
 
-			for (int i = 0; i < 100; i ++){
+			for (int i = 0; i < 1; i ++){
 				System.out.println("M at iteration " + i + ": " + m);
 				System.out.println("B at iteration " + i + ": " + b);
 				Configuration conf = new Configuration();
@@ -102,7 +102,7 @@ public class WordCount extends Configured implements Tool {
 				job.setOutputFormatClass(TextOutputFormat.class);
 				job.waitForCompletion(true);
 				
-				reader = new BufferedReader(new FileReader(args[1] + "/" + i));
+				reader = new BufferedReader(new FileReader(args[1] + i + "/part-r-00000"));
 				Double mpartial = Double.parseDouble(reader.readLine().split(" ")[1]);
 				Double bpartial = Double.parseDouble(reader.readLine().split(" ")[1]);
 				
