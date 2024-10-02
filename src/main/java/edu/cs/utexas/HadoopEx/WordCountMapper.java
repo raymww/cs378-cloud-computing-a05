@@ -21,14 +21,21 @@ public class WordCountMapper extends Mapper<Object, Text, Text, Wrapper> {
 		
 		String[] fields = value.toString().split(",");
 		try {
+
 				String driverID = fields[1].trim();
-				float time = Float.parseFloat(fields[4]);
-				float total = Float.parseFloat(fields[16]);
+				word.set(driverID);
+
+				double distance = Float.parseFloat(fields[5]);
+				double fare_amount = Float.parseFloat(fields[11]);
+				double tolls_amount = Float.parseFloat(fields[15]);
+				double time = Float.parseFloat(fields[4]);
 
 
+				if (tolls_amount < 3 || fare_amount < 3 || fare_amount > 200 || distance < 1 || distance > 50 || time < 120 || time > 3600){
+					throw new Exception();
+				}
 
-				word.set(String.valueOf(driverID));
-				Wrapper wrapper = new Wrapper(time, total);
+				Wrapper wrapper = new Wrapper(distance, fare_amount);
 				context.write(word, wrapper);
 
 		} catch (Exception e) {

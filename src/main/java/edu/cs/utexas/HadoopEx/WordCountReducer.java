@@ -5,45 +5,44 @@ import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Comparator;
 
-import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class WordCountReducer extends  Reducer<Text, Wrapper, Text, FloatWritable> {
+public class WordCountReducer extends  Reducer<Text, Wrapper, Text, DoubleWritable> {
 
    public void reduce(Text text, Iterable<Wrapper> values, Context context)
            throws IOException, InterruptedException {
 	   
-        HashMap<String, float[]> taxiData = new HashMap<>(); // error, count
-
+        double[] data = new double[5];
+        int counter = 0;
         
         for (Wrapper val : values) {
-            System.out.println("Taxi ID: " + text.toString() + " Time: " + val.gettime().get() + " Total: " + val.gettotal().get());
-            float time = val.gettime().get();
-            float total = val.gettotal().get();
-            String taxiID = text.toString();
-
-            if (taxiData.containsKey(taxiID)) {
-                float[] data = taxiData.get(taxiID);
-                data[0] += time;
-                data[1] += total;
-                taxiData.put(taxiID, data);
-            } else {
-                float[] data = new float[2];
-                data[0] = time;
-                data[1] = total;
-                taxiData.put(taxiID, data);
-
-            }
+            // System.out.println("Taxi ID: " + text.toString() + " Time: " + val.gettime().get() + " Total: " + val.gettotal().get());
+            counter += 1;
+            double distance = val.getDistance().get();
+            double fare_amount = val.getFareAmount().get();
+            // float multiplied = val.getMultiplied().get();
+            data[0] += 1;
+            data[1] += distance;
+            data[2] += fare_amount;
+            data[3] += distance * fare_amount;
+            data[4] += Math.pow(distance, 2);
         }
-        for (String taxi : taxiData.keySet()) {
-            float[] data = taxiData.get(taxi);
-            float moneypmin = 0;
-            if (data[0] != 0 && data[1] != 0) {
-                moneypmin = data[1] / (data[0] / 60);
-            }
-            System.out.println(taxi + " " + moneypmin);
-            context.write(new Text(taxi), new FloatWritable(moneypmin));
-        }
+
+        double m = 0;
+        double b = 0;
+        double n = data[0];
+        double sumx = data[1];
+        double sumy = data[2];
+        double sumxy = data[3];
+        double sumx2 = data[4];
+
+        m = ((n * sumxy) - (sumx * sumy)) / ((n * sumx2) - Math.pow(sumx, 2));
+        b =  ((sumx2 * sumy) - (sumx * sumxy)) / ((n * sumx2) - Math.pow(sumx, 2));
+
+
+        context.write(new Text("m"), new DoubleWritable(m));
+        context.write(new Text("m"), new DoubleWritable(b));
    }
 }
