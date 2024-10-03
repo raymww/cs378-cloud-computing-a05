@@ -52,12 +52,15 @@ public class WordCountReducer extends  Reducer<Text, Wrapper, Text, DoubleWritab
         // context.write(new Text("b"), new DoubleWritable(b));
         BufferedReader reader = new BufferedReader(new FileReader("params"));
         
-        double m = Double.parseDouble(reader.readLine());
+        double m1 = Double.parseDouble(reader.readLine()); //amount
+        double m2 = Double.parseDouble(reader.readLine()); //distance
+        double m3 = Double.parseDouble(reader.readLine()); //time
+        double m4 = Double.parseDouble(reader.readLine()); //tolls
         double b = Double.parseDouble(reader.readLine());
         int iteration = Integer.parseInt(reader.readLine());
         reader.close();
 
-        double[] data = new double[3];
+        double[] data = new double[5]; // 0: m1, 1: m2, 2: m3, 3: m4, 4: b, 5: cost
         double count = 0;
 
         
@@ -66,22 +69,36 @@ public class WordCountReducer extends  Reducer<Text, Wrapper, Text, DoubleWritab
             // System.out.println("Taxi ID: " + text.toString() + " Time: " + val.gettime().get() + " Total: " + val.gettotal().get());
             double distance = val.getDistance().get();
             double fare_amount = val.getFareAmount().get();
+            double trip_distance = val.getTripDistance().get();
+            double trip_time = val.getTripTime().get();
+            double tolls_amount = val.getTollsAmount().get();
+            double variables[] = {distance, fare_amount, trip_distance, trip_time, tolls_amount};
             // float multiplied = val.getMultiplied().get();
-            data[0] += (-1 * distance) * (fare_amount - ((m * distance) + b));
-            data[1] += -1 * (fare_amount - (m * distance  + b));
-            data[2] += Math.pow((fare_amount - ((m * distance) + b)), 2);
+            double summation_factor = fare_amount - ((m1 * distance) + (m2 * trip_distance) + (m3 * trip_time) + (m4 * tolls_amount) + b);
+            for (int i = 0; i < 4; i++){
+                data[i] += (-1 * variables[i]) * summation_factor;
+            }            
+
+            data[4] += (-1) * (summation_factor);
+            data[5] += Math.pow(summation_factor, 2);
         }
 
-        System.out.println(data[0] + " " + data[1] + " " + data[2]);
+         System.out.println(data[0] + " " + data[1] + " " + data[2]);
 
-        double mpart = (2 / count) * data[0]; 
-        double bpart = (2 / count) * data[1];
+         double m1part = (2 / count) * data[0]; 
+         double m2part = (2 / count) * data[1];
+         double m3part = (2 / count) * data[2];
+         double m4part = (2 / count) * data[3];
+         double bpart = (2 / count) * data[4];
 
-        System.out.println("mpart at iteration " + iteration + ": " + mpart);
-        System.out.println("bpart at iteration " + iteration + ": " + bpart);
-        System.out.println("Cost at iteration " + iteration + ": " + data[2]);
+         System.out.println("iteration: " + iteration);
+         System.out.println("m1: " + m1 + " m2: " + m2 + " m3: " + m3 + " m4: " + m4 + " b: " + b);
+         System.out.println("Cost: " + data[5]);
 
-        context.write(new Text("m"), new DoubleWritable(mpart));
-        context.write(new Text("b"), new DoubleWritable(bpart));
+         context.write(new Text("m1"), new DoubleWritable(m1part));
+         context.write(new Text("m2"), new DoubleWritable(m2part));
+         context.write(new Text("m3"), new DoubleWritable(m3part));
+         context.write(new Text("m4"), new DoubleWritable(m4part));
+         context.write(new Text("b"), new DoubleWritable(bpart));
    }
 }

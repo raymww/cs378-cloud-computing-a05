@@ -32,6 +32,7 @@ public class WordCountMapper extends Mapper<Object, Text, Text, Wrapper> {
 				double tolls_amount = Double.parseDouble(fields[15]);
 				double time = Double.parseDouble(fields[4]);
 
+
 				// if (tolls_amount > 0){
 				// 	System.out.println("Tolls: " + tolls_amount);
 				// }
@@ -42,7 +43,7 @@ public class WordCountMapper extends Mapper<Object, Text, Text, Wrapper> {
 					throw new Exception();
 				}
 
-				Wrapper wrapper = new Wrapper(distance, fare_amount);
+				Wrapper wrapper = new Wrapper(distance, fare_amount, distance, time, tolls_amount);
 				context.write(new Text("taxi"), wrapper);
 
 		} catch (Exception e) {	

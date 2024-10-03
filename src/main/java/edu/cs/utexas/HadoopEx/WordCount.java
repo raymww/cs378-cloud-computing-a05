@@ -70,14 +70,18 @@ public class WordCount extends Configured implements Tool {
 			writer.close();
 
 			double lr = 0.001;
-			double m = 0;
+			double m1 = 0;
+			double m2 = 0;
+			double m3 = 0;
+			double m4 = 0;
 			double b = 0;
 			for(int i = 0; i < 100; i++){
-				System.out.println("M at iteration " + i + ": " + m);
-				System.out.println("B at iteration " + i + ": " + b);
 
 				writer = new BufferedWriter(new FileWriter("params", false));
-				writer.write(Double.toString(m) + "\n");
+				writer.write(Double.toString(m1) + "\n");
+				writer.write(Double.toString(m2) + "\n");
+				writer.write(Double.toString(m3) + "\n");
+				writer.write(Double.toString(m4) + "\n");
 				writer.write(Double.toString(b) + "\n");
 				writer.write(Integer.toString(i) + "\n");
 				writer.close();
@@ -106,15 +110,24 @@ public class WordCount extends Configured implements Tool {
 
 				reader = new BufferedReader(new FileReader(args[1] + i + "/part-r-00000"));
 				
-				double mpart = Double.parseDouble(reader.readLine().split("\\s+")[1]);
+				double m1part = Double.parseDouble(reader.readLine().split("\\s+")[1]);
+				double m2part = Double.parseDouble(reader.readLine().split("\\s+")[1]);
+				double m3part = Double.parseDouble(reader.readLine().split("\\s+")[1]);
+				double m4part = Double.parseDouble(reader.readLine().split("\\s+")[1]);
 				double bpart = Double.parseDouble(reader.readLine().split("\\s+")[1]);
 
-				m -= mpart * lr;
+				m1 -= m1part * lr;
+				m2 -= m2part * lr;
+				m3 -= m3part * lr;
+				m4 -= m4part * lr;
 				b -= bpart * lr;
 			}
 
-			System.out.println("Final M: " + m);
-			System.out.println("Final B: " + b);
+			System.out.println("m1: " + m1);
+			System.out.println("m2: " + m2);
+			System.out.println("m3: " + m3);
+			System.out.println("m4: " + m4);
+			System.out.println("b: " + b);
 
 			// if (!job.waitForCompletion(true)) {
 			// 	return 1;
