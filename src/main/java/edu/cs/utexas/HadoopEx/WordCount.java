@@ -1,21 +1,13 @@
 package edu.cs.utexas.HadoopEx;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
@@ -23,144 +15,62 @@ import org.apache.hadoop.util.ToolRunner;
 
 public class WordCount extends Configured implements Tool {
 
-	/**
-	 * 
-	 * @param args
-	 * @throws Exception
-	 */
+    public static void main(String[] args) throws Exception {
+        int res = ToolRunner.run(new Configuration(), new WordCount(), args);
+        System.exit(res);
+    }
 
-	public static void main(String[] args) throws Exception {
-		int res = ToolRunner.run(new Configuration(), new WordCount(), args);
-		System.exit(res);
-	}
+    public int run(String args[]) {
+        try {
+            double lr = 0.001;
+            double m1 = 0, m2 = 0, m3 = 0, m4 = 0, b = 0;
 
-	/**
-	 * 
-	 */
-	public int run(String args[]) {
-		try {
+            for (int i = 0; i < 100; i++) {
+                Configuration conf = new Configuration();
+                conf.set("current.m1", Double.toString(m1));
+                conf.set("current.m2", Double.toString(m2));
+                conf.set("current.m3", Double.toString(m3));
+                conf.set("current.m4", Double.toString(m4));
+                conf.set("current.b", Double.toString(b));
+                conf.setInt("current.iteration", i);
 
-			BufferedReader reader = new BufferedReader(new FileReader(args[0]));
-            BufferedWriter writer = new BufferedWriter(new FileWriter("cleaned_dataset.csv", false));
-            String line;
+                Job job = Job.getInstance(conf, "WordCount");
+                job.setJarByClass(WordCount.class);
+                job.setMapperClass(WordCountMapper.class);
+                job.setReducerClass(WordCountReducer.class);
+                job.setOutputKeyClass(Text.class);
+                job.setOutputValueClass(Wrapper.class);
 
-            // Process each line from the input CSV file
-            while ((line = reader.readLine()) != null) {
-                String[] fields = line.split(","); // Split by comma
+                FileInputFormat.addInputPath(job, new Path(args[0]));
+                job.setInputFormatClass(TextInputFormat.class);
+                FileOutputFormat.setOutputPath(job, new Path(args[1] + i));
+                job.setOutputFormatClass(TextOutputFormat.class);
 
+                if (!job.waitForCompletion(true)) {
+                    return 1;
+                }
 
-				try {
-					String driverID = fields[1].trim();
-					double distance = Double.parseDouble(fields[5]);
-					double fare_amount = Double.parseDouble(fields[11]);
-					double tolls_amount = Double.parseDouble(fields[15]);
-					double time = Double.parseDouble(fields[4]);
+                // Read results from the job's counters
+                m1 -= lr * (job.getCounters().findCounter("GradientDescent", "m1part").getValue() / 1000000.0);
+                m2 -= lr * (job.getCounters().findCounter("GradientDescent", "m2part").getValue() / 1000000.0);
+                m3 -= lr * (job.getCounters().findCounter("GradientDescent", "m3part").getValue() / 1000000.0);
+                m4 -= lr * (job.getCounters().findCounter("GradientDescent", "m4part").getValue() / 1000000.0);
+                b -= lr * (job.getCounters().findCounter("GradientDescent", "bpart").getValue() / 1000000.0);
 
-					if (tolls_amount < 3 || fare_amount < 3 || fare_amount > 200 || distance < 1 || distance > 50 || time < 120 || time > 3600){
-						// throw new Exception(distance + " " + fare_amount + " " + tolls_amount + " " + time);
-						throw new Exception();
-					} 
-					writer.write(line + "\n");
-				} catch (Exception e) {
-					continue;
-				}
+                System.out.println("Iteration " + i + ": m1=" + m1 + ", m2=" + m2 + ", m3=" + m3 + ", m4=" + m4 + ", b=" + b);
             }
 
-			reader.close();
-			writer.close();
+            System.out.println("Final m1: " + m1);
+            System.out.println("Final m2: " + m2);
+            System.out.println("Final m3: " + m3);
+            System.out.println("Final m4: " + m4);
+            System.out.println("Final b: " + b);
 
-			double lr = 0.001;
-			double m1 = 0;
-			double m2 = 0;
-			double m3 = 0;
-			double m4 = 0;
-			double b = 0;
-			for(int i = 0; i < 100; i++){
-
-				writer = new BufferedWriter(new FileWriter("params", false));
-				writer.write(Double.toString(m1) + "\n");
-				writer.write(Double.toString(m2) + "\n");
-				writer.write(Double.toString(m3) + "\n");
-				writer.write(Double.toString(m4) + "\n");
-				writer.write(Double.toString(b) + "\n");
-				writer.write(Integer.toString(i) + "\n");
-				writer.close();
-
-				Configuration conf = new Configuration();
-				Job job = new Job(conf, "WordCount");
-				job.setJarByClass(WordCount.class);
-
-				// specify a Mapper
-				job.setMapperClass(WordCountMapper.class);
-
-				// specify a Reducer
-				job.setReducerClass(WordCountReducer.class);
-
-				// specify output types
-				job.setOutputKeyClass(Text.class);
-				job.setOutputValueClass(Wrapper.class);
-
-				// specify input and output directories
-				FileInputFormat.addInputPath(job, new Path("cleaned_dataset.csv"));
-				job.setInputFormatClass(TextInputFormat.class);
-
-				FileOutputFormat.setOutputPath(job, new Path(args[1] + i));
-				job.setOutputFormatClass(TextOutputFormat.class);
-				job.waitForCompletion(true);
-
-				reader = new BufferedReader(new FileReader(args[1] + i + "/part-r-00000"));
-				
-				double m1part = Double.parseDouble(reader.readLine().split("\\s+")[1]);
-				double m2part = Double.parseDouble(reader.readLine().split("\\s+")[1]);
-				double m3part = Double.parseDouble(reader.readLine().split("\\s+")[1]);
-				double m4part = Double.parseDouble(reader.readLine().split("\\s+")[1]);
-				double bpart = Double.parseDouble(reader.readLine().split("\\s+")[1]);
-
-				m1 -= m1part * lr;
-				m2 -= m2part * lr;
-				m3 -= m3part * lr;
-				m4 -= m4part * lr;
-				b -= bpart * lr;
-			}
-
-			System.out.println("m1: " + m1);
-			System.out.println("m2: " + m2);
-			System.out.println("m3: " + m3);
-			System.out.println("m4: " + m4);
-			System.out.println("b: " + b);
-
-			// if (!job.waitForCompletion(true)) {
-			// 	return 1;
-			// }
-
-			// Job job2 = new Job(conf, "TopK");
-			// job2.setJarByClass(WordCount.class);
-
-			// // specify a Mapper
-			// job2.setMapperClass(TopKMapper.class);
-
-			// // specify a Reducer
-			// job2.setReducerClass(TopKReducer.class);
-
-			// // specify output types
-			// job2.setOutputKeyClass(Text.class);
-			// job2.setOutputValueClass(FloatWritable.class);
-
-			// // set the number of reducer to 1
-			// job2.setNumReduceTasks(1);
-
-			// // specify input and output directories
-			// FileInputFormat.addInputPath(job2, new Path(args[1]));
-			// job2.setInputFormatClass(KeyValueTextInputFormat.class);
-
-			// FileOutputFormat.setOutputPath(job2, new Path(args[2]));
-			// job2.setOutputFormatClass(TextOutputFormat.class);
-			return 0;
-
-		} catch (InterruptedException | ClassNotFoundException | IOException e) {
-			System.err.println("Error during mapreduce job.");
-			e.printStackTrace();
-			return 2;
-		}
-	}
+            return 0;
+        } catch (InterruptedException | ClassNotFoundException | IOException e) {
+            System.err.println("Error during mapreduce job.");
+            e.printStackTrace();
+            return 2;
+        }
+    }
 }
