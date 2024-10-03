@@ -40,35 +40,6 @@ public class WordCount extends Configured implements Tool {
 	public int run(String args[]) {
 		try {
 
-			BufferedReader reader = new BufferedReader(new FileReader(args[0]));
-            BufferedWriter writer = new BufferedWriter(new FileWriter("cleaned_dataset.csv", false));
-            String line;
-
-            // Process each line from the input CSV file
-            while ((line = reader.readLine()) != null) {
-                String[] fields = line.split(","); // Split by comma
-
-
-				try {
-					String driverID = fields[1].trim();
-					double distance = Double.parseDouble(fields[5]);
-					double fare_amount = Double.parseDouble(fields[11]);
-					double tolls_amount = Double.parseDouble(fields[15]);
-					double time = Double.parseDouble(fields[4]);
-
-					if (tolls_amount < 3 || fare_amount < 3 || fare_amount > 200 || distance < 1 || distance > 50 || time < 120 || time > 3600){
-						// throw new Exception(distance + " " + fare_amount + " " + tolls_amount + " " + time);
-						throw new Exception();
-					} 
-					writer.write(line + "\n");
-				} catch (Exception e) {
-					continue;
-				}
-            }
-
-			reader.close();
-			writer.close();
-
 			double lr = 0.001;
 			double m = 0;
 			double b = 0;
@@ -76,7 +47,7 @@ public class WordCount extends Configured implements Tool {
 				System.out.println("M at iteration " + i + ": " + m);
 				System.out.println("B at iteration " + i + ": " + b);
 
-				writer = new BufferedWriter(new FileWriter("params", false));
+				BufferedWriter writer = new BufferedWriter(new FileWriter("params", false));
 				writer.write(Double.toString(m) + "\n");
 				writer.write(Double.toString(b) + "\n");
 				writer.write(Integer.toString(i) + "\n");
@@ -97,14 +68,14 @@ public class WordCount extends Configured implements Tool {
 				job.setOutputValueClass(Wrapper.class);
 
 				// specify input and output directories
-				FileInputFormat.addInputPath(job, new Path("cleaned_dataset.csv"));
+				FileInputFormat.addInputPath(job, new Path(args[0]));
 				job.setInputFormatClass(TextInputFormat.class);
 
 				FileOutputFormat.setOutputPath(job, new Path(args[1] + i));
 				job.setOutputFormatClass(TextOutputFormat.class);
 				job.waitForCompletion(true);
 
-				reader = new BufferedReader(new FileReader(args[1] + i + "/part-r-00000"));
+				BufferedReader reader = new BufferedReader(new FileReader(args[1] + i + "/part-r-00000"));
 				
 				double mpart = Double.parseDouble(reader.readLine().split("\\s+")[1]);
 				double bpart = Double.parseDouble(reader.readLine().split("\\s+")[1]);
