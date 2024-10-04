@@ -61,14 +61,14 @@ public class WordCount extends Configured implements Tool {
                 }
                 
                 FileSystem fs = new Path(args[1]).getFileSystem(new Configuration());
+
+                System.out.println("Getting into stuff");
+                
                 Object[] values = getValues(fs, args[1] + i);
                 
+                System.out.println("values array: " + values);
                 double mpart = (double) values[0];
                 double bpart = (double) values[1];
-
-                // Read results from the job's counters
-                // double mpart = job.getCounters().findCounter("GradientDescent", "mpart").getValue() / 1000000.0;
-                // double bpart = job.getCounters().findCounter("GradientDescent", "bpart").getValue() / 1000000.0;
                 
                 m -= mpart * lr;
                 b -= bpart * lr;
@@ -88,17 +88,20 @@ public class WordCount extends Configured implements Tool {
     private Object[] getValues(FileSystem fs, String string) {
         Object[] values = new Object[2];
         Path filePath = new Path(string + "/part-r-00000");
-        System.out.println("Attempting to open file: " + filePath.toString());
         try (FSDataInputStream fsDataInputStream = fs.open(filePath);
             BufferedReader reader = new BufferedReader(new InputStreamReader(fsDataInputStream))) {
 
             String line;
             
             while ((line = reader.readLine()) != null) {
-                
+                System.out.println("The line: " + line);
                 values[0] = Double.parseDouble(line.split("\\s+")[1]);
+                System.out.println("values[0]: " + values[0]);
                 values[1] = Double.parseDouble(reader.readLine().split("\\s+")[1]);
+                System.out.println("values[1]: " + values[1]);
+
             }
+            System.out.println("after while loop");
 
         } catch (IOException e) {
             e.printStackTrace();
