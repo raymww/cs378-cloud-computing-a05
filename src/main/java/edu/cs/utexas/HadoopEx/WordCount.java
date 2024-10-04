@@ -74,7 +74,7 @@ public class WordCount extends Configured implements Tool {
                 
                 System.out.println("Partials: " + m1part + " " + m2part + " " + m3part + " " + m4part + "  " + b);
                 System.out.println("Iteration " + i + ": m1=" + m1 + ", m2=" + m2 + ", m3=" + m3 + ", m4=" + m4 + ", b=" + b);
-                System.out.println("Cost: " + ((double) job.getCounters().findCounter("GradientDescent", "cost").getValue() / 1000000.0));
+                // System.out.println("Cost: " + ((double) job.getCounters().findCounter("GradientDescent", "cost").getValue() / 1000000.0)); // TODO: I don't know what to change this to 
             }
 
             System.out.println("Final m1: " + m1);
