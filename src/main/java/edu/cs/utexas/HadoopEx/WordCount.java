@@ -1,8 +1,13 @@
 package edu.cs.utexas.HadoopEx;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -50,12 +55,17 @@ public class WordCount extends Configured implements Tool {
                     return 1;
                 }
 
+                FileSystem fs = new Path(args[1]).getFileSystem(new Configuration());
+                
+                Object[] values = getValues(fs, args[1] + i);
+
                 // Read results from the job's counters
-                double m1part = ((double)job.getCounters().findCounter("GradientDescent", "m1part").getValue() / 1000000.0);
-                double m2part = ((double)job.getCounters().findCounter("GradientDescent", "m2part").getValue() / 1000000.0);
-                double m3part = ((double)job.getCounters().findCounter("GradientDescent", "m3part").getValue() / 1000000.0);
-                double m4part = ((double)job.getCounters().findCounter("GradientDescent", "m4part").getValue() / 1000000.0);
-                double bpart = ((double) job.getCounters().findCounter("GradientDescent", "bpart").getValue() / 1000000.0);
+                double m1part = (double) values[0];
+                double m2part = (double) values[1];
+                double m3part = (double) values[2];
+                double m4part = (double) values[3];
+                double bpart = (double) values[4];
+
                 m1 -= lr * m1part;
                 m2 -= lr * m2part;
                 m3 -= lr * m3part;
@@ -80,4 +90,26 @@ public class WordCount extends Configured implements Tool {
             return 2;
         }
     }
+
+    private Object[] getValues(FileSystem fs, String string) {
+        Object[] values = new Object[5];
+        Path filePath = new Path(string + "/part-r-00000");
+        try (FSDataInputStream fsDataInputStream = fs.open(filePath);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fsDataInputStream))) {
+
+            String line;
+            
+            int i = 0;
+            while ((line = reader.readLine()) != null) {
+                values[i] = Double.parseDouble(line.split("\\s+")[1]);
+                i++;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return values; 
+    }
+
 }

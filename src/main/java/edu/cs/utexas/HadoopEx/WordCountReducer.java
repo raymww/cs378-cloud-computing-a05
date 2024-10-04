@@ -55,12 +55,12 @@ public class WordCountReducer extends Reducer<Text, Wrapper, Text, DoubleWritabl
         System.out.println("Cost: " + data[5]);
 
         // Use Hadoop Counters to pass the results back
-        context.getCounter("GradientDescent", "m1part").increment((long)(m1part * 1000000));
-        context.getCounter("GradientDescent", "m2part").increment((long)(m2part * 1000000));
-        context.getCounter("GradientDescent", "m3part").increment((long)(m3part * 1000000));
-        context.getCounter("GradientDescent", "m4part").increment((long)(m4part * 1000000));
-        context.getCounter("GradientDescent", "bpart").increment((long)(bpart * 1000000));
-        context.getCounter("GradientDescent", "cost").increment((long)(data[5] * 1000000));
+      //   context.getCounter("GradientDescent", "m1part").increment((long)(m1part * 1000000));
+      //   context.getCounter("GradientDescent", "m2part").increment((long)(m2part * 1000000));
+      //   context.getCounter("GradientDescent", "m3part").increment((long)(m3part * 1000000));
+      //   context.getCounter("GradientDescent", "m4part").increment((long)(m4part * 1000000));
+      //   context.getCounter("GradientDescent", "bpart").increment((long)(bpart * 1000000));
+      //   context.getCounter("GradientDescent", "cost").increment((long)(data[5] * 1000000));
 
         // Write the results (useful for debugging)
         context.write(new Text("m1"), new DoubleWritable(m1part));
