@@ -11,12 +11,12 @@ public class Wrapper implements Writable{
     
     DoubleWritable distance;
     DoubleWritable fare_amount;
-    // DoubleWritable multiplied;
-
+    DoubleWritable dm;
+    DoubleWritable db;
+    
     public Wrapper() {
         this.distance = new DoubleWritable();
         this.fare_amount = new DoubleWritable();
-        // this.multiplied = new DoubleWritable();
     }
 
     public Wrapper(double distance, double fare_amount) {
@@ -38,12 +38,15 @@ public class Wrapper implements Writable{
         fare_amount.readFields(dataInput);
         // multiplied.readFields(dataInput);
     }
+
     public DoubleWritable getDistance() {
         return this.distance;
     }
+
     public DoubleWritable getFareAmount() {
         return this.fare_amount;
     }
+
     // public DoubleWritable getMultiplied() {
     //     return this.multiplied;
     // }

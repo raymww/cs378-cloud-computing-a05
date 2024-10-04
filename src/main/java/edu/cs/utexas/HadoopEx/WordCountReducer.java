@@ -22,9 +22,9 @@ public class WordCountReducer extends Reducer<Text, Wrapper, Text, DoubleWritabl
             count++;
             double distance = val.getDistance().get();
             double fare_amount = val.getFareAmount().get();
-            data[0] += (-1 * distance) * (fare_amount - ((m * distance) + b));
-            data[1] += -1 * (fare_amount - (m * distance + b));
-            data[2] += Math.pow((fare_amount - ((m * distance) + b)), 2);
+            data[0] += (-1 * distance) * (fare_amount - ((m * distance) + b)); // m 
+            data[1] += -1 * (fare_amount - (m * distance + b)); // b
+            data[2] += Math.pow((fare_amount - ((m * distance) + b)), 2); // cost 
         }
 
         System.out.println(data[0] + " " + data[1] + " " + data[2]);
@@ -35,10 +35,6 @@ public class WordCountReducer extends Reducer<Text, Wrapper, Text, DoubleWritabl
         System.out.println("mpart at iteration " + iteration + ": " + mpart);
         System.out.println("bpart at iteration " + iteration + ": " + bpart);
         System.out.println("Cost at iteration " + iteration + ": " + data[2]);
-
-        // Use Hadoop Counters to pass the results back
-        context.getCounter("GradientDescent", "mpart").increment((long)(mpart * 1000000));
-        context.getCounter("GradientDescent", "bpart").increment((long)(bpart * 1000000));
 
         // Write the results
         context.write(new Text("m"), new DoubleWritable(mpart));
