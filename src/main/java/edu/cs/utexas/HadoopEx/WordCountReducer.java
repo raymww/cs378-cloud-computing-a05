@@ -23,14 +23,15 @@ public class WordCountReducer extends Reducer<Text, Wrapper, Text, DoubleWritabl
 
         for (Wrapper val : values) {
             count++;
-            double distance = val.getDistance().get();
-            double fare_amount = val.getFareAmount().get();
-            double trip_distance = val.getTripDistance().get();
+            double total_amount = val.getTotalAmount().get();
             double trip_time = val.getTripTime().get();
+            double trip_distance = val.getTripDistance().get();
+            double fare_amount = val.getFareAmount().get();
             double tolls_amount = val.getTollsAmount().get();
-            double[] variables = {distance, fare_amount, trip_distance, trip_time, tolls_amount};
+
+            double[] variables = {trip_time, trip_distance, fare_amount, tolls_amount};
             
-            double summation_factor = fare_amount - ((m1 * distance) + (m2 * trip_distance) + (m3 * trip_time) + (m4 * tolls_amount) + b);
+            double summation_factor = total_amount - ((m1 * trip_time) + (m2 * trip_distance) + (m3 * fare_amount) + (m4 * tolls_amount) + b);
             for (int i = 0; i < 4; i++){
                 data[i] += (-1 * variables[i]) * summation_factor;
             }            
@@ -39,7 +40,6 @@ public class WordCountReducer extends Reducer<Text, Wrapper, Text, DoubleWritabl
             data[5] += Math.pow(summation_factor, 2);
         }
 
-        System.out.println(data[0] + " " + data[1] + " " + data[2]);
 
         double m1part = (2 / count) * data[0]; 
         double m2part = (2 / count) * data[1];
@@ -47,8 +47,11 @@ public class WordCountReducer extends Reducer<Text, Wrapper, Text, DoubleWritabl
         double m4part = (2 / count) * data[3];
         double bpart = (2 / count) * data[4];
 
+        System.out.println("\n\n\n\n\n\n");
+        System.out.println(data[0] + " " + data[1] + " " + data[2] + " " + data[3] + " " + data[4]);
         System.out.println("iteration: " + iteration);
         System.out.println("m1: " + m1 + " m2: " + m2 + " m3: " + m3 + " m4: " + m4 + " b: " + b);
+        System.out.println("partials: " + "m: " + m1part + " m2: " + m2part + " m3: " + m3part + " m4: " + m4part + " b: " + bpart);
         System.out.println("Cost: " + data[5]);
 
         // Use Hadoop Counters to pass the results back

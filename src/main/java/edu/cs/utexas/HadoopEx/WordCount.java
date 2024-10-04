@@ -51,13 +51,20 @@ public class WordCount extends Configured implements Tool {
                 }
 
                 // Read results from the job's counters
-                m1 -= lr * (job.getCounters().findCounter("GradientDescent", "m1part").getValue() / 1000000.0);
-                m2 -= lr * (job.getCounters().findCounter("GradientDescent", "m2part").getValue() / 1000000.0);
-                m3 -= lr * (job.getCounters().findCounter("GradientDescent", "m3part").getValue() / 1000000.0);
-                m4 -= lr * (job.getCounters().findCounter("GradientDescent", "m4part").getValue() / 1000000.0);
-                b -= lr * (job.getCounters().findCounter("GradientDescent", "bpart").getValue() / 1000000.0);
-
+                double m1part = ((double)job.getCounters().findCounter("GradientDescent", "m1part").getValue() / 1000000.0);
+                double m2part = ((double)job.getCounters().findCounter("GradientDescent", "m2part").getValue() / 1000000.0);
+                double m3part = ((double)job.getCounters().findCounter("GradientDescent", "m3part").getValue() / 1000000.0);
+                double m4part = ((double)job.getCounters().findCounter("GradientDescent", "m4part").getValue() / 1000000.0);
+                double bpart = ((double) job.getCounters().findCounter("GradientDescent", "bpart").getValue() / 1000000.0);
+                m1 -= lr * m1part;
+                m2 -= lr * m2part;
+                m3 -= lr * m3part;
+                m4 -= lr * m4part;
+                b -= lr * bpart;
+                
+                System.out.println("Partials: " + m1part + " " + m2part + " " + m3part + " " + m4part + "  " + b);
                 System.out.println("Iteration " + i + ": m1=" + m1 + ", m2=" + m2 + ", m3=" + m3 + ", m4=" + m4 + ", b=" + b);
+                System.out.println("Cost: " + ((double) job.getCounters().findCounter("GradientDescent", "cost").getValue() / 1000000.0));
             }
 
             System.out.println("Final m1: " + m1);
