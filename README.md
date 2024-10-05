@@ -56,7 +56,6 @@ To compile the project and create a single jar file with all dependencies:
 
 
 ## Run your application
-Inside your shell with Hadoop
 
 Running as Java Application:
 
@@ -64,7 +63,7 @@ Running as Java Application:
 
 Or has hadoop application
 
-```hadoop jar your-hadoop-application.jar edu.cs.utexas.HadoopEx.WordCount arg0 arg1 ... ```
+```mvn clean package; rm -r output*; hadoop jar target/MapReduce-WordCount-example-0.1-SNAPSHOT-jar-with-dependencies.jar taxi-data-sorted-small.csv output``
 
 
 
